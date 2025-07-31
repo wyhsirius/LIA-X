@@ -59,11 +59,12 @@ python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml'
 ```
 <img src="assets/img_edit1.png" height="180"> <img src="assets/img_edit2.png" height="180"> <img src="assets/img_edit3.png" height="180"> <img src="assets/img_edit4.png" height="180">
 
-- Interpolation
+- Linear Interpolation
 
 ```bash
 python inference.py --mode interpolation --cfg 'config/interpolation/demo1.yaml'
 ```
+<img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
 
 If you would like to try other data, you could put source images in `./data/source`, driving videos in `./data/driving` and run
 ```bash
