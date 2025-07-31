@@ -38,12 +38,14 @@ We provide configurations in `./config` for **image animation**, **video editing
 ```bash
 python inference.py --mode animation --cfg 'config/animation/animation1.yaml'
 ```
+<img src="assets/animation1.gif">
 
 - Video Editing
 
 ```bash
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
 ```
+<img src="assets/vid_edit1.gif">
 
 - Image Editing
 
