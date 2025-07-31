@@ -16,7 +16,7 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We strongly recommend to play the model interactively. We provide both [online]() and local gradio interface.
+We strongly recommend to play the model using either our [online]() or local gradio interface.
 
 For image animation and image editing, run
 
@@ -33,15 +33,13 @@ python app_vid_edit.py
 ## Inference
 We provide configurations in `./config` for **image animation**, **video editing**, **image editing** and **linear interpolation**. Try playing with `motion_id` and `motion_value` in configuration file to obtain different results.
 
-- Image Animation
-
+**1. Image Animation**
 ```bash
 python inference.py --mode animation --cfg 'config/animation/animation1.yaml'
 ```
 <img src="assets/animation1.gif">
 
-- Video Editing
-
+**2. Video Editing**
 ```bash
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
@@ -49,8 +47,7 @@ python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
 <img src="assets/vid_edit1.gif" height="180"> <img src="assets/vid_edit2.gif" height="180">
 
 
-- Image Editing
-
+**3. Image Editing**
 ```bash
 python inference.py --mode img_edit --cfg 'config/img_edit/demo1.yaml'
 python inference.py --mode img_edit --cfg 'config/img_edit/demo2.yaml'
@@ -59,14 +56,18 @@ python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml'
 ```
 <img src="assets/img_edit1.png" height="180"> <img src="assets/img_edit2.png" height="180"> <img src="assets/img_edit3.png" height="180"> <img src="assets/img_edit4.png" height="180">
 
-- Linear Interpolation
-
+**4. Linear Interpolation**
 ```bash
 python inference.py --mode interpolation --cfg 'config/interpolation/demo1.yaml'
+python inference.py --mode interpolation --cfg 'config/interpolation/demo2.yaml'
+python inference.py --mode interpolation --cfg 'config/interpolation/demo5.yaml'
+python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml'
 ```
 <img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
 
-If you would like to try other data, you could put source images in `./data/source`, driving videos in `./data/driving` and run
+**5. Animation with Your Own Data**
+
+Put source images in `./data/source`, driving videos in `./data/driving`. Modify `./config/default.yaml` and run
 ```bash
 python inference.py --mode animation --cfg 'config/animation/default.yaml'
 ```
