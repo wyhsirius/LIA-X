@@ -57,6 +57,7 @@ python inference.py --mode img_edit --cfg 'config/img_edit/demo2.yaml'
 python inference.py --mode img_edit --cfg 'config/img_edit/demo3.yaml'
 python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml'
 ```
+<img src="assets/img_edit1.png" height="180"> <img src="assets/img_edit2.png" height="180"> <img src="assets/img_edit3.png" height="180"> <img src="assets/img_edit4.png" height="180">
 
 - Interpolation
 
