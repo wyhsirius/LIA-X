@@ -6,7 +6,7 @@ Yaohui Wang, Di Yang, Xinyuan Chen, François Brémond, Yu Qiao, Antitza Dantche
 
 ## Setup
 
-Prepare the environment and download pre-trained model [LIA-X model]() from huggingface to `./models`. 
+Prepare the environment and download [model]() from huggingface to `./models`. 
 
 ```bash
 git clone https://github.com/wyhsirius/LIA-X
@@ -16,7 +16,7 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We strongly recommend to use interface to play the model. You could directly use online [gradio interface](), or run it locally.
+We strongly recommend to play the model interactively. We provide both [online]() and local gradio interface.
 
 For image animation and image editing, run
 
@@ -31,7 +31,7 @@ python app_vid_edit.py
 ```
 
 ## Inference
-We provide configurations in `./config` for **image animation**, **video editing**, **image editing** and **interpolation**. Try playing with `motion_id` and `motion_value` in configuration file to obtain different results. By using the default settings, you could obtain following results.
+We provide configurations in `./config` for **image animation**, **video editing**, **image editing** and **linear interpolation**. Try playing with `motion_id` and `motion_value` in configuration file to obtain different results.
 
 - Image Animation
 
