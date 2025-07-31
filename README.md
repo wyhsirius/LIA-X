@@ -16,7 +16,7 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We strongly recommend to play the model using either our [online]() or local gradio interface.
+We strongly recommend to use either our [online]() or local gradio interface.
 
 For image animation and image editing, run
 
@@ -31,7 +31,7 @@ python app_vid_edit.py
 ```
 
 ## Inference
-We provide configurations in `./config` for **image animation**, **video editing**, **image editing** and **linear interpolation**. Try playing with `motion_id` and `motion_value` in configuration file to obtain different results.
+You can use `inference.py` to run the demo. Use `--mode` flag to choose the setting from `image animation`, `video editing`, `image editing` and `linear interpolation` to run. The `--cfg` flag indicates the path of corresponding configuration files. Try to play with `motion_id` and `motion_value` in configuration file to obtain different results. The following are some of the examples.
 
 **1. Image Animation**
 ```bash
@@ -44,7 +44,7 @@ python inference.py --mode animation --cfg 'config/animation/animation1.yaml'
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
 ```
-<img src="assets/vid_edit1.gif" height="180"> <img src="assets/vid_edit2.gif" height="180">
+<img src="assets/vid_edit1.gif" height="180">     <img src="assets/vid_edit2.gif" height="180">
 
 
 **3. Image Editing**
@@ -65,12 +65,12 @@ python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml'
 ```
 <img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
 
-**5. Animation with Your Own Data**
+**5. Animating your own data**
 
-Put source images in `./data/source`, driving videos in `./data/driving`. Modify `./config/default.yaml` and run
+1. Put source image in `./data/source` and driving video in `./data/driving`.
+2. Modify `./config/default.yaml` and set correct `source_path` and `driving_path`.
+3. Play with `motion_value` to obtain the best results. By default (`motion_value=0`), the source image will not be edited.
 ```bash
 python inference.py --mode animation --cfg 'config/animation/default.yaml'
 ```
-In this way, the source image will not be edited, you could try to set different values in `motion_value` to obtain better results.
-
 
