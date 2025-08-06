@@ -42,7 +42,7 @@ python inference.py --mode animation --cfg 'config/animation/animation1.yaml'
 **2. Video Editing**
 ```bash
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
-python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml'
+python inference.py --mode vid_edit --cfg 'config/vid_edit/demo2.yaml'
 ```
 <img src="assets/vid_edit1.gif" height="180">     <img src="assets/vid_edit2.gif" height="180">
 
