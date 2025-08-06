@@ -1,6 +1,12 @@
 # LIA-X: Interpretable Latent Portrait Animator
-Yaohui Wang, Di Yang, Xinyuan Chen, François Brémond, Yu Qiao, Antitza Dantcheva
-### [Project Page](https://wyhsirius.github.io/LIA-X-project/) | [Paper]()
+[Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao*](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/)
+
+[![arXiv](https://img.shields.io/badge/arXiv-2309.15103-b31b1b.svg)]()
+[![Project Page](https://img.shields.io/badge/Project-Website-green)](https://wyhsirius.github.io/LIA-X-project/)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
+[![Static Badge](https://img.shields.io/badge/LIA--X%20checkpoint%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20checkpoint)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
+
+This is the official PyTorch inference codebase for [LIA-X]()
 
 <img src="teaser.gif" width="1000">
 
@@ -78,11 +84,18 @@ python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml'
 ```
 <img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
 
-**5. Animating your own data**
+**5. Animating Your Own Data**
 
-1. Modify your configutation file and set `source_path`, `driving_path` and `save_dir` with correct data paths.
-2. By default (`motion_value=0`), the source image will not be edited. Play with `motion_value` to obtain the best results.
+1. Data preperation (image & video cropping)
+```bash
+python img_crop.py --img_p <YOUR_IMG_PATH> # crop an image
+python vid_crop.py --vid_p <YOUR_VID_PATH> # crop a video
+```  
+
+2. Set correct `source_path`, `driving_path` and `save_dir` in your configuration file and run
 ```bash
 python inference.py --mode animation --cfg <YOUR_CONFIG_FILE_PATH>
 ```
+
+3. By default (`motion_value=0`), the source image will not be edited. Play with `motion_value` in configuration file to obtain the best results.
 
