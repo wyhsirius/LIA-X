@@ -16,19 +16,18 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We strongly recommend to use either our [online]() or local gradio interface.
+We recommend to use gradio interface to test the model. We provide both [online interface]() and local gradio interface.
 
-For image animation and image editing, run
-
-```bash
-python app_animtion.py
-```
-
-For video editing, run
 
 ```bash
-python app_vid_edit.py
+python app.py
 ```
+
+**Instruction:** In the interface, we provide two tabs 
+  1. `Animation & Image Editing`:
+
+  2. `Video Edting`
+
 
 ## Inference
 You can use `inference.py` to run the demo. Use `--mode` flag to choose the setting from `image animation`, `video editing`, `image editing` and `linear interpolation` to run. The `--cfg` flag indicates the path of corresponding configuration files. Try to play with `motion_id` and `motion_value` in configuration file to obtain different results. The following are some of the examples.
