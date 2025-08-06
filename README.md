@@ -16,8 +16,7 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We recommend to use gradio interface to test the model. We provide both [online]() and local gradio interface.
-
+We recommend to use [gradio interface]() to test the model. To run it locally:
 
 ```bash
 python app.py
