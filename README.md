@@ -23,7 +23,7 @@ python app.py
 ```
 
 **Instruction:** In the interface, we provide two tabs `Animation & Image Editing` and `Video Edting`, they all support fine-grained manipulation for `head`, `mouth` and `eyes` using the `Control Panel`.
-- Animation & Image Editing
+- **Animation & Image Editing**
   1. Image Animation
     - Upload `Source Image` and `Driving Video`
     - Use `Control Panel` to edit source image and `Edit` button to display the `Edited Source Image`
@@ -31,7 +31,7 @@ python app.py
   2. Image Editing
     - Upload `Source Image`
     - Use `Control Panel` to edit source image and `Edit` button to display the `Edited Source Image`
-- Video Editing
+- **Video Editing**
     - Upload `Video`
     - Use `Control Panel` to edit first frame of video and `Edit` button to display the `Edited Image`
     - Use `Generate` button to obtain `Edited Video`
