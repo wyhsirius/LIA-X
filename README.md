@@ -22,7 +22,7 @@ We recommend to use [gradio interface]() to test the model. To run it locally:
 python app.py
 ```
 
-**Instruction:** In the interface, we provide two tabs `Animation & Image Editing` and `Video Edting`, and they all support fine-grained manipulation for `head`, `mouth` and `eyeballs` using the `Control Panel`.
+**Instruction:** In the interface, we provide two tabs `Animation & Image Editing` and `Video Edting`, they all support fine-grained manipulation for `head`, `mouth` and `eyes` using the `Control Panel`.
 - Animation & Image Editing
   1. Image Animation
     - Upload `Source Image` and `Driving Video`
