@@ -6,7 +6,7 @@ Yaohui Wang, Di Yang, Xinyuan Chen, François Brémond, Yu Qiao, Antitza Dantche
 
 ## Setup
 
-Prepare the environment and download [model]() from huggingface to `./models`. 
+Prepare the environment and download [model](https://huggingface.co/YaohuiW/LIA-X/tree/main) from huggingface to `./models`. 
 
 ```bash
 git clone https://github.com/wyhsirius/LIA-X
