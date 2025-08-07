@@ -93,7 +93,7 @@ python inference.py --mode manipulation --cfg 'config/manipulation/demo6.yaml' #
 python utils/crop.py --mode img --data_path <YOUR_IMG_PATH> # crop image
 python utils/crop.py --mode vid --data_path <YOUR_VID_PATH> # crop video
 ```
-You can use `increase_scale` and `increase_top_scale` flags to adjust bounding box scales. Results will be saves at `./data/source` and `./data/driving`
+You can use `increase_scale` and `increase_top_scale` flags to adjust bounding box scales. Results will be saved at `./data/source` and `./data/driving`
 
 2. Set correct `source_path`, `driving_path` and `save_dir` in your configuration file
 3. Play with `motion_value` in configuration and run following command. By default (`motion_value=0`), the source image will not be edited. 
