@@ -22,7 +22,7 @@ conda activate liax
 ```
 
 ## Gradio Interface 
-We recommend to use [gradio interface]() to test the model. To run it locally:
+We recommend to use [gradio interface]() to play with LIA-X. Run it locally
 
 ```bash
 python app.py
