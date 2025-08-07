@@ -1,6 +1,6 @@
 {
   # data
-  'driving_path': './data/driving/talking2.mp4',
+  'driving_path': './data/driving/driving2.mp4',
   'save_path': './res/vid_edit/',
   # model setting
   'ckpt_path': './ckpt/lia-x.pt',
