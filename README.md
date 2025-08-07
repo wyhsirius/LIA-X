@@ -77,12 +77,12 @@ python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml' # move ey
 ```
 <img src="assets/img_edit1.png" height="180"> <img src="assets/img_edit2.png" height="180"> <img src="assets/img_edit3.png" height="180"> <img src="assets/img_edit4.png" height="180">
 
-**4. Linear Interpolation**
+**4. Linear Manipulation**
 ```bash
-python inference.py --mode interpolation --cfg 'config/interpolation/demo1.yaml' # yaw
-python inference.py --mode interpolation --cfg 'config/interpolation/demo2.yaml' # pitch
-python inference.py --mode interpolation --cfg 'config/interpolation/demo5.yaml' # close & open eyes
-python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml' # move eyeballs
+python inference.py --mode interpolation --cfg 'config/manipulation/demo1.yaml' # yaw
+python inference.py --mode interpolation --cfg 'config/manipulation/demo2.yaml' # pitch
+python inference.py --mode interpolation --cfg 'config/manipulation/demo5.yaml' # close & open eyes
+python inference.py --mode interpolation --cfg 'config/manipulation/demo6.yaml' # move eyeballs
 ```
 <img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
 
