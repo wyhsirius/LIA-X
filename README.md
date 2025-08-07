@@ -1,18 +1,20 @@
 # LIA-X: Interpretable Latent Portrait Animator
-[Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao*](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/)
+[Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao*](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/) (*corresponding author)
 
 [![arXiv](https://img.shields.io/badge/arXiv-2309.15103-b31b1b.svg)]()
 [![Project Page](https://img.shields.io/badge/Project-Website-green)](https://wyhsirius.github.io/LIA-X-project/)
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
 [![Static Badge](https://img.shields.io/badge/LIA--X%20checkpoint%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20checkpoint)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
 
-This is the official PyTorch inference codebase for [LIA-X]()
+This is the official PyTorch codebase for [LIA-X](), which is built upon [LIA](). 
+
+LIA-X has developped original LIA into a new level, where now it supports interpretable and fine-grained control of **head**, **mouth** and **eyes**.
 
 <img src="teaser.gif" width="1000">
 
 ## Setup
 
-Prepare the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) from huggingface to `./models`. 
+Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./models`. 
 
 ```bash
 git clone https://github.com/wyhsirius/LIA-X
@@ -32,7 +34,7 @@ python app.py
   
 <summary>Instruction</summary>
 
-In the interface, we provide two tabs `Animation & Image Editing` and `Video Edting`, they all support fine-grained manipulation for `head`, `mouth` and `eyes` using the `Control Panel`.
+We provide two tabs `Animation & Image Editing` and `Video Edting`, they all support fine-grained manipulation for `head`, `mouth` and `eyes` using the `Control Panel`.
 - **Animation & Image Editing**
   1. Image Animation
     - Upload `Source Image` and `Driving Video`
@@ -60,7 +62,7 @@ python inference.py --mode animation --cfg 'config/animation/animation6.yaml'
 
 **2. Video Editing**
 ```bash
-python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml' # head rotation
+python inference.py --mode vid_edit --cfg 'config/vid_edit/demo1.yaml' # yaw
 python inference.py --mode vid_edit --cfg 'config/vid_edit/demo2.yaml' # closing eyes
 ```
 <img src="assets/vid_edit1.gif" height="180">     <img src="assets/vid_edit2.gif" height="180">
@@ -68,18 +70,18 @@ python inference.py --mode vid_edit --cfg 'config/vid_edit/demo2.yaml' # closing
 
 **3. Image Editing**
 ```bash
-python inference.py --mode img_edit --cfg 'config/img_edit/demo1.yaml'
-python inference.py --mode img_edit --cfg 'config/img_edit/demo2.yaml'
-python inference.py --mode img_edit --cfg 'config/img_edit/demo3.yaml'
-python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml'
+python inference.py --mode img_edit --cfg 'config/img_edit/demo1.yaml' # yaw
+python inference.py --mode img_edit --cfg 'config/img_edit/demo2.yaml' # pout
+python inference.py --mode img_edit --cfg 'config/img_edit/demo3.yaml' # close eyes
+python inference.py --mode img_edit --cfg 'config/img_edit/demo4.yaml' # move eyeballs
 ```
 <img src="assets/img_edit1.png" height="180"> <img src="assets/img_edit2.png" height="180"> <img src="assets/img_edit3.png" height="180"> <img src="assets/img_edit4.png" height="180">
 
 **4. Linear Interpolation**
 ```bash
-python inference.py --mode interpolation --cfg 'config/interpolation/demo1.yaml' # head rotation
-python inference.py --mode interpolation --cfg 'config/interpolation/demo2.yaml' # pout
-python inference.py --mode interpolation --cfg 'config/interpolation/demo5.yaml' # close eyes
+python inference.py --mode interpolation --cfg 'config/interpolation/demo1.yaml' # yaw
+python inference.py --mode interpolation --cfg 'config/interpolation/demo2.yaml' # pitch
+python inference.py --mode interpolation --cfg 'config/interpolation/demo5.yaml' # close & open eyes
 python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml' # move eyeballs
 ```
 <img src="assets/interpolation1.gif" height="180"> <img src="assets/interpolation2.gif" height="180"> <img src="assets/interpolation5.gif" height="180"> <img src="assets/interpolation6.gif" height="180">
@@ -88,14 +90,14 @@ python inference.py --mode interpolation --cfg 'config/interpolation/demo6.yaml'
 
 1. Data preperation (image & video cropping)
 ```bash
-python img_crop.py --img_p <YOUR_IMG_PATH> # crop an image
-python vid_crop.py --vid_p <YOUR_VID_PATH> # crop a video
-```  
+python utils/crop.py --mode img --data_path <YOUR_IMG_PATH> # crop image
+python utils/crop.py --mode vid --data_path <YOUR_VID_PATH> # crop video
+```
+You can use `increase_scale` and `increase_top_scale` flags to adjust bounding box scales. Results will be saves at `./data/source` and `./data/driving`
 
-2. Set correct `source_path`, `driving_path` and `save_dir` in your configuration file and run
+2. Set correct `source_path`, `driving_path` and `save_dir` in your configuration file
+3. Play with `motion_value` in configuration and run following command. By default (`motion_value=0`), the source image will not be edited. 
 ```bash
 python inference.py --mode animation --cfg <YOUR_CONFIG_FILE_PATH>
 ```
-
-3. By default (`motion_value=0`), the source image will not be edited. Play with `motion_value` in configuration file to obtain the best results.
 
