@@ -1,7 +1,7 @@
 {
   # data
   'source_path': './data/source/frida.png',
-  'save_path': './res/interpolation/',
+  'save_path': './res/manipulation/',
   # model setting
   'ckpt_path': './ckpt/lia-x.pt',
   'size': 512, # resolution
