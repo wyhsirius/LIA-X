@@ -1,0 +1,12 @@
+einops==0.8.1
+face_alignment==1.4.1
+gradio==5.41.1
+imageio==2.37.0
+numpy==1.24.3
+Pillow==11.3.0
+PyYAML==6.0.2
+PyYAML==6.0.2
+skimage==0.0
+torch==2.0.1
+torchvision==0.15.2
+tqdm==4.67.1
