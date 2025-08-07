@@ -14,13 +14,17 @@ LIA-X has developped original LIA into a new level, where now it supports interp
 
 ## Setup
 
-Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./models`. 
-
 ```bash
 git clone https://github.com/wyhsirius/LIA-X
 cd LIA-X
-conda env create -f environment.yml
+```
+
+Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./models`. 
+
+```bash
+conda create -n liax python=3.11
 conda activate liax
+pip install -r requirements.txt
 ```
 
 ## Interactive Gradio Interface 
