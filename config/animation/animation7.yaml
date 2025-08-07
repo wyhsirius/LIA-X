@@ -1,0 +1,44 @@
+{
+  # data
+  'source_path': './data/source/taylor.png',
+  'driving_path': './data/driving/driving2.mp4',
+  'save_path': './res/animation/',
+  # model setting
+  'ckpt_path': './ckpt/lia-x.pt',
+  'size': 512, # resolution
+  'motion_dim': 40,
+  'scale': 2,
+  # motion dictionary setting
+  'motion_id': [
+    37, # yaw (only head)
+    39, # yaw (head + shoulder)
+    28, # pitch
+    15, # roll1
+    33, # roll2
+    31, # moving neck left and right
+    6,  # mouth (pout)
+    25, # mouth (wide smile)
+    16, # 'O' mouth
+    19, # mouth (smirk)
+    13, # open/close eyes
+    24, # raise/frown eyebrows
+    17, # moving eyeballs
+    26, # moving eyeballs
+  ],
+  'motion_value': [
+      -0.48, # 37
+      0, # 39
+      -0.18, # 28
+      0, # 15
+      -0.12, # 33
+      0, # 31
+      -0.04, # 6
+      0.13, # 25
+      0.1, # 16
+      0.05, # 19
+      0, # 13
+      0.16, # 24
+      0, # 17
+      0  # 26
+  ]
+}

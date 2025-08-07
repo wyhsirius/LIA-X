@@ -1,0 +1,44 @@
+{
+  # data
+  'source_path': './data/source/macron.png',
+  'driving_path': './data/driving/driving1.mp4',
+  'save_path': './res/animation/',
+  # model setting
+  'ckpt_path': './ckpt/lia-x.pt',
+  'size': 512, # resolution
+  'motion_dim': 40,
+  'scale': 2,
+  # motion dictionary setting
+  'motion_id': [
+    37, # yaw (only head)
+    39, # yaw (head + shoulder)
+    28, # pitch
+    15, # roll1
+    33, # roll2
+    31, # moving neck left and right
+    6,  # mouth (pout)
+    25, # open/close mouth
+    16, # 'O' mouth
+    19, # moving apple cheek
+    13, # open/close eyes
+    24, # raise/frown eyebrows
+    17, # moving eyeballs
+    26, # moving eyeballs
+  ],
+  'motion_value': [
+      0.14, # 37
+      0, # 39
+      -0.26, # 28
+      -0.29, # 15
+      -0.11, # 33
+      0, # 31
+      -0.13, # 6
+      -0.18, # 25
+      0, # 16
+      0, # 19
+      0, # 13
+      0, # 24
+      -0.02, # 17
+      0.07  # 26
+  ]
+}
