@@ -4,7 +4,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2309.15103-b31b1b.svg)]()
 [![Project Page](https://img.shields.io/badge/Project-Website-green)](https://wyhsirius.github.io/LIA-X-project/)
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
-[![Static Badge](https://img.shields.io/badge/LIA--X%20checkpoint%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20checkpoint)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
+[![Static Badge](https://img.shields.io/badge/LIA--X%20Model%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20Model)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
 
 This is the official PyTorch codebase for [LIA-X](), which is built upon [LIA](). 
 
