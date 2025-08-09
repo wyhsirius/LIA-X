@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ```
 
 ## Interactive Gradio Interface 
-We recommend to use [gradio interface]() to play with LIA-X. Run it locally
+We recommend to use gradio interface to play with LIA-X. You could also exoplore in our online [HF Space](https://huggingface.co/spaces/YaohuiW/LIA-X) 
 
 ```bash
 python app.py
