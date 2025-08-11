@@ -1,5 +1,5 @@
 # LIA-X: Interpretable Latent Portrait Animator
-[Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao*](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/) (*corresponding author)
+[Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/)
 
 [![Project Page](https://img.shields.io/badge/Project-Website-green)](https://wyhsirius.github.io/LIA-X-project/)
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
