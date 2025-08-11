@@ -3,7 +3,7 @@
   'source_path': './data/source/frida.png',
   'save_path': './res/img_edit/',
   # model setting
-  'ckpt_path': './ckpt/lia-x.pt',
+  'ckpt_path': './model/lia-x.pt',
   'size': 512, # resolution
   'motion_dim': 40,
   'scale': 2,
