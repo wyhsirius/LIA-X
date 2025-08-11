@@ -5,9 +5,7 @@
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
 [![Static Badge](https://img.shields.io/badge/LIA--X%20Model%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20Model)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
 
-This is the official PyTorch codebase for [LIA-X](), which is built upon [LIA](https://github.com/wyhsirius/LIA). 
-
-LIA-X has developped original LIA into a new level, where now it supports interpretable and fine-grained control of **head**, **mouth** and **eyes**.
+This is the official PyTorch codebase for [LIA-X](). LIA-X has developped original [LIA](https://github.com/wyhsirius/LIA) into a new level, where now it supports interpretable and fine-grained control of **head**, **mouth** and **eyes**.
 
 <img src="teaser.gif" width="1000">
 
