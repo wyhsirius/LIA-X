@@ -16,7 +16,7 @@ git clone https://github.com/wyhsirius/LIA-X
 cd LIA-X
 ```
 
-Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./models`. 
+Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./model`. 
 
 ```bash
 conda create -n liax python=3.11
