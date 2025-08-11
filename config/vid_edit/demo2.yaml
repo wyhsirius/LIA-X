@@ -3,7 +3,7 @@
   'driving_path': './data/driving/driving1.mp4',
   'save_path': './res/vid_edit/',
   # model setting
-  'ckpt_path': './ckpt/lia-x.pt',
+  'ckpt_path': './model/lia-x.pt',
   'size': 512, # resolution
   'motion_dim': 40,
   'scale': 2,
