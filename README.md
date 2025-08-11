@@ -2,7 +2,7 @@
 [Yaohui Wang](https://wyhsirius.github.io/), [Di Yang](https://walker1126.github.io/), [Xinyuan Chen](https://scholar.google.com/citations?user=3fWSC8YAAAAJ&hl=zh-CN), [François Brémond](https://www-sop.inria.fr/members/Francois.Bremond/), [Yu Qiao](https://scholar.google.com/citations?user=gFtI-8QAAAAJ&hl=en), [Antitza Dantcheva](https://www-sop.inria.fr/members/Antitza.Dantcheva/)
 
 [![Project Page](https://img.shields.io/badge/Project-Website-green)](https://wyhsirius.github.io/LIA-X-project/)
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)]()
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)](https://huggingface.co/spaces/YaohuiW/LIA-X)
 [![Static Badge](https://img.shields.io/badge/LIA--X%20Model%20-HuggingFace-yellow?logoColor=violet%20LIA--X%20Model)](https://huggingface.co/YaohuiW/LIA-X/tree/main)
 
 This is the official PyTorch codebase for [LIA-X](). LIA-X has developped original [LIA](https://github.com/wyhsirius/LIA) into a new level, where now it supports interpretable and fine-grained control of **head**, **mouth** and **eyes**.
