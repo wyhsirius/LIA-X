@@ -43,7 +43,7 @@ def run_img_edit(cfg, gen, save_dir):
 
 
 @torch.no_grad()
-def run_vid_edit(cfg, gen, save_dir):
+def run_vid_edit(cfg, gen, chunk_size, save_dir):
 
 	print("==> loading data")
 	print("video path: ", cfg["driving_path"])
@@ -51,7 +51,7 @@ def run_vid_edit(cfg, gen, save_dir):
 	vid = vid.to(device)
 
 	print("==> running")
-	vid_edit = gen.edit_vid(vid, cfg["motion_id"], cfg["motion_value"])
+	vid_edit = gen.edit_vid_batch(vid, cfg["motion_id"], cfg["motion_value"], chunk_size)
 
 	# save results
 	save_vid_edit(save_dir, vid, vid_edit, fps=fps)
@@ -61,7 +61,7 @@ def run_vid_edit(cfg, gen, save_dir):
 
 
 @torch.no_grad()
-def run_animation(cfg, gen, save_dir):
+def run_animation(cfg, gen, chunk_size, save_dir):
 
 	print("==> loading data")
 	print("image path: ", cfg["source_path"])
@@ -72,7 +72,7 @@ def run_animation(cfg, gen, save_dir):
 	vid_driving = vid_driving.to(device) # BTCHW
 
 	print("==> running")
-	vid_animated = gen.animate(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"])
+	vid_animated = gen.animate_batch(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"], chunk_size)
 	# save results
 	save_animation(save_dir, img_source, vid_driving, vid_animated, fps)
 	print("save path: ", save_dir)
@@ -85,6 +85,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cfg", type=str, default='')
 	parser.add_argument("--mode", type=str, choices=['animation','img_edit','vid_edit','manipulation'])
+	parser.add_argument("--chunk_size", type=int, default=8)
 	args = parser.parse_args()
 
 	# loading cfg
@@ -104,10 +105,10 @@ if __name__ == "__main__":
 	# running
 	if args.mode == "animation":
 		print("==> start animation")
-		run_animation(cfg, gen, save_dir)
+		run_animation(cfg, gen, args.chunk_size, save_dir)
 	elif args.mode == "vid_edit":
 		print("==> start video editing")
-		run_vid_edit(cfg, gen, save_dir)
+		run_vid_edit(cfg, gen, args.chunk_size, save_dir)
 	elif args.mode == "img_edit":
 		print("==> start image editing")
 		run_img_edit(cfg, gen, save_dir)
