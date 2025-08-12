@@ -4,6 +4,7 @@ from networks.encoder import Encoder
 from networks.decoder import Decoder
 import numpy as np
 from tqdm import tqdm
+from einops import rearrange, repeat
 
 
 class Generator(nn.Module):
@@ -46,6 +47,45 @@ class Generator(nn.Module):
 
 		return vid_target_recon
 
+	def animate_batch(self, img_source, vid_target, d_l, v_l, chunk_size):
+		# img_source: TxCHW
+		# vid_target: 1xTCHW
+		
+		b,t,c,h,w = vid_target.size()
+		alpha_start = self.get_alpha(vid_target[:, 0, :, :, :]) # 1x40
+
+		z_s2r, feat_rgb = self.enc.enc_2r(img_source)
+		alpha_r2s = self.enc.enc_r2t(z_s2r)
+		alpha_r2s[:, d_l] = alpha_r2s[:, d_l] + torch.FloatTensor(v_l).unsqueeze(0).to('cuda')
+		
+		bs = chunk_size
+		chunks = t//bs
+		
+		alpha_start_r = repeat(alpha_start, 'b c -> (repeat b) c', repeat=bs)
+		alpha_r2s_r = repeat(alpha_r2s, 'b c -> (repeat b) c', repeat=bs)
+		feat_rgb_r = [repeat(feat, 'b c h w -> (repeat b) c h w', repeat=bs) for feat in feat_rgb]
+		z_s2r_r = repeat(z_s2r, 'b c -> (repeat b) c', repeat=bs)
+
+		vid_target_recon = []
+		for i in range(chunks+1):
+			if i == chunks:
+				img_target = vid_target[:, i*bs:, :, :, :]
+				bs = t-i*bs
+				alpha_start_r = alpha_start_r[:bs] #alpha_start.repeat(bs,1)
+				alpha_r2s_r = alpha_r2s_r[:bs] #alpha_r2s.repeat(bs,1)
+				feat_rgb_r = [feat[:bs] for feat in feat_rgb_r]#[feat.repeat(bs,1,1,1) for feat in feat_rgb]
+				z_s2r_r = z_s2r_r[:bs] #z_s2r.repeat(bs,1)
+			else:
+				img_target = vid_target[:, i*bs:(i+1)*bs, :, :, :]
+
+			alpha = self.enc.enc_transfer_vid(alpha_r2s_r, img_target.squeeze(0), alpha_start_r)
+			img_recon = self.dec(z_s2r_r, alpha, feat_rgb_r) # bs x 3 x h x w
+			vid_target_recon.append(img_recon)
+		vid_target_recon = torch.cat(vid_target_recon, dim=0).unsqueeze(0) # 1xTCHW
+		vid_target_recon = rearrange(vid_target_recon, 'b t c h w -> b c t h w')
+
+		return vid_target_recon # BCTHW
+
 	def edit_vid(self, vid_target, d_l, v_l):
 
 		img_source = vid_target[:, 0, :, :, :]
@@ -62,6 +102,44 @@ class Generator(nn.Module):
 			img_recon = self.dec(z_s2r, alpha, feat_rgb)
 			vid_target_recon.append(img_recon.unsqueeze(2))
 		vid_target_recon = torch.cat(vid_target_recon, dim=2) # BCTHW
+
+		return vid_target_recon
+
+	def edit_vid_batch(self, vid_target, d_l, v_l, chunk_size):
+
+		b, t, c, h, w = vid_target.size()
+		img_source = vid_target[:, 0, :, :, :]
+		alpha_start = self.get_alpha(vid_target[:, 0, :, :, :])
+
+		z_s2r, feat_rgb = self.enc.enc_2r(img_source)
+		alpha_r2s = self.enc.enc_r2t(z_s2r)
+		alpha_r2s[:, d_l] = alpha_r2s[:, d_l] + torch.FloatTensor(v_l).unsqueeze(0).to('cuda')
+
+		bs = chunk_size
+		chunks = t // bs
+
+		alpha_start_r = repeat(alpha_start, 'b c -> (repeat b) c', repeat=bs)
+		alpha_r2s_r = repeat(alpha_r2s, 'b c -> (repeat b) c', repeat=bs)
+		feat_rgb_r = [repeat(feat, 'b c h w -> (repeat b) c h w', repeat=bs) for feat in feat_rgb]
+		z_s2r_r = repeat(z_s2r, 'b c -> (repeat b) c', repeat=bs)
+
+		vid_target_recon = []
+		for i in range(chunks + 1):
+			if i == chunks:
+				img_target = vid_target[:, i * bs:, :, :, :]
+				bs = t - i * bs
+				alpha_start_r = alpha_start_r[:bs]	# alpha_start.repeat(bs,1)
+				alpha_r2s_r = alpha_r2s_r[:bs]	# alpha_r2s.repeat(bs,1)
+				feat_rgb_r = [feat[:bs] for feat in feat_rgb_r]  # [feat.repeat(bs,1,1,1) for feat in feat_rgb]
+				z_s2r_r = z_s2r_r[:bs]	# z_s2r.repeat(bs,1)
+			else:
+				img_target = vid_target[:, i * bs:(i + 1) * bs, :, :, :]
+
+			alpha = self.enc.enc_transfer_vid(alpha_r2s_r, img_target.squeeze(0), alpha_start_r)
+			img_recon = self.dec(z_s2r_r, alpha, feat_rgb_r)  # bs x 3 x h x w
+			vid_target_recon.append(img_recon)
+		vid_target_recon = torch.cat(vid_target_recon, dim=0).unsqueeze(0)	# 1xTCHW
+		vid_target_recon = rearrange(vid_target_recon, 'b t c h w -> b c t h w')
 
 		return vid_target_recon
 

@@ -1,7 +1,7 @@
 import gradio as gr
 import subprocess
 import os
-import spaces
+#import spaces
 import torch
 
 extensions_dir = "./torch_extension/"
@@ -50,9 +50,10 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
 			animation(gen, chunk_size, device)
 			vid_edit(gen, chunk_size, device)
 
-    
+	
 demo.launch(
-    server_name='0.0.0.0',
-    share=True,
-    allowed_paths=["./data/source","./data/driving"]
+	server_name='0.0.0.0',
+	server_port=10006,
+	share=True,
+	allowed_paths=["./data/source","./data/driving"]
 )

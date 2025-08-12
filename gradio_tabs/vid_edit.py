@@ -6,7 +6,7 @@ from PIL import Image
 import numpy as np
 import imageio
 from einops import rearrange
-import spaces
+#import spaces
 
 output_dir = "./res_gradio"
 os.makedirs(output_dir, exist_ok=True)

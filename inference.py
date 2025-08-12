@@ -51,7 +51,10 @@ def run_vid_edit(cfg, gen, chunk_size, save_dir):
 	vid = vid.to(device)
 
 	print("==> running")
-	vid_edit = gen.edit_vid_batch(vid, cfg["motion_id"], cfg["motion_value"], chunk_size)
+	if chunk_size == 1:
+		vid_edit = gen.edit_vid(vid, cfg["motion_id"], cfg["motion_value"])
+	else:
+		vid_edit = gen.edit_vid_batch(vid, cfg["motion_id"], cfg["motion_value"], chunk_size)
 
 	# save results
 	save_vid_edit(save_dir, vid, vid_edit, fps=fps)
@@ -72,7 +75,11 @@ def run_animation(cfg, gen, chunk_size, save_dir):
 	vid_driving = vid_driving.to(device) # BTCHW
 
 	print("==> running")
-	vid_animated = gen.animate_batch(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"], chunk_size)
+	if chunk_size == 1:
+		vid_animated = gen.animate(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"])
+	else:
+		vid_animated = gen.animate_batch(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"], chunk_size)
+	
 	# save results
 	save_animation(save_dir, img_source, vid_driving, vid_animated, fps)
 	print("save path: ", save_dir)
@@ -85,7 +92,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--cfg", type=str, default='')
 	parser.add_argument("--mode", type=str, choices=['animation','img_edit','vid_edit','manipulation'])
-	parser.add_argument("--chunk_size", type=int, default=8)
+	parser.add_argument("--chunk_size", type=int, default=8) # process multiple frames each iteration, accelerate inference speed
 	args = parser.parse_args()
 
 	# loading cfg
