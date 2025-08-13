@@ -159,7 +159,7 @@ def animation(gen, chunk_size, device):
 		return None, None, *([0] * len(labels_k))
 
 	
-	with gr.Tab("Animation"):
+	with gr.Tab("Image Animation"):
 
 		inputs_s = []
 
