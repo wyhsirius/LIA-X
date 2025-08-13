@@ -7,7 +7,7 @@
 
 This is the official PyTorch codebase for [LIA-X](). LIA-X has developped original [LIA](https://github.com/wyhsirius/LIA) into a new level, where now it supports interpretable and fine-grained control of **head**, **mouth** and **eyes**.
 
-<img src="scientists" width="1000">
+<img src="scientists.gif" width="1000">
 
 ## Setup
 
