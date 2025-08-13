@@ -106,7 +106,7 @@ def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
 	image = image.permute(0, 2, 3, 1)
 	edited_image = img_denorm(image)
 	img_output = (edited_image[0].numpy() * 255).astype(np.uint8)
-	imageio.imwrite(output_path, img_output, quality=6)
+	imageio.imwrite(output_path, img_output, quality=8)
 
 	return output_path
 
@@ -118,7 +118,7 @@ def vid_postprocessing(video, w, h, fps, output_path=output_dir + "/output_vid.m
 	vid_batch = resize_back(rearrange(video, "b c t h w -> (b t) c h w"), w, h)
 	vid = rearrange(vid_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C	
 	vid_np = (vid_denorm(vid[0]).numpy() * 255).astype('uint8')
-	imageio.mimwrite(output_path, vid_np, fps=fps, codec='libx264', quality=10)
+	imageio.mimwrite(output_path, vid_np, fps=fps, codec='libx264', quality=8)
 
 	return output_path
 
