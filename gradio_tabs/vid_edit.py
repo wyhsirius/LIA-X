@@ -23,7 +23,7 @@ labels_k = [
 	'pout',
 	'open->close',
 	'"O" mouth',
-	'apple cheek',
+	'smile',
 
 	'close->open',
 	'eyebrows',
@@ -60,8 +60,16 @@ def img_preprocessing(img_path, size):
 
 def resize(img, size):
 	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize(size, antialias=True),
-		torchvision.transforms.CenterCrop(size)
+		torchvision.transforms.Resize((size, size), antialias=True),
+		#torchvision.transforms.CenterCrop(size)
+	])
+
+	return transform(img)
+
+
+def resize_back(img, w, h):
+	transform = torchvision.transforms.Compose([
+		torchvision.transforms.Resize((h, w), antialias=True),
 	])
 
 	return transform(img)
@@ -70,6 +78,7 @@ def resize(img, size):
 def vid_preprocessing(vid_path, size):
 	vid_dict = torchvision.io.read_video(vid_path, pts_unit='sec')
 	vid = vid_dict[0].permute(0, 3, 1, 2).unsqueeze(0)	# btchw
+	_,_,_,h,w = vid.size()
 	fps = vid_dict[2]['video_fps']
 	vid_norm = (vid / 255.0 - 0.5) * 2.0  # [-1, 1]
 
@@ -77,7 +86,7 @@ def vid_preprocessing(vid_path, size):
 		resize(vid_norm[:, i, :, :, :], size).unsqueeze(1) for i in range(vid.size(1))
 	], dim=1)
 
-	return vid_norm, fps
+	return vid_norm, fps, w, h
 
 
 def img_denorm(img):
@@ -94,19 +103,25 @@ def vid_denorm(vid):
 	return vid
 
 
-def img_postprocessing(image, output_path=output_dir + "/output_img.png"):
+def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
+
+	image = resize_back(image, w, h)
 	image = image.permute(0, 2, 3, 1)
 	edited_image = img_denorm(image)
 	img_output = (edited_image[0].numpy() * 255).astype(np.uint8)
-	imageio.imwrite(output_path, img_output, quality=6)
+	imageio.imwrite(output_path, img_output, quality=8)
 
 	return output_path
 
 
-def vid_all_save(vid_d, vid_a, fps, output_path=output_dir + "/output_vid.mp4", output_all_path=output_dir + "/output_all_vid.mp4"):
-
-	vid_d = rearrange(vid_d, 'b t c h w -> b t h w c')
-	vid_a = rearrange(vid_a, 'b c t h w -> b t h w c')
+def vid_all_save(vid_d, vid_a, w, h, fps, output_path=output_dir + "/output_vid.mp4", output_all_path=output_dir + "/output_all_vid.mp4"):
+	
+	b,t,c,_,_ = vid_d.size()
+	vid_d_batch = resize_back(rearrange(vid_d, "b t c h w -> (b t) c h w"), w, h)
+	vid_a_batch = resize_back(rearrange(vid_a, "b c t h w -> (b t) c h w"), w, h)
+	
+	vid_d = rearrange(vid_d_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C
+	vid_a = rearrange(vid_a_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C	
 	vid_all = torch.cat([vid_d, vid_a], dim=3)
 
 	vid_a_np = (vid_denorm(vid_a[0]).numpy() * 255).astype('uint8')
@@ -119,19 +134,19 @@ def vid_all_save(vid_d, vid_a, fps, output_path=output_dir + "/output_vid.mp4", 
 
 
 def vid_edit(gen, chunk_size, device):
-    
-    
+	
+	
 	@torch.no_grad()
 	def edit_img(video, *selected_s):
 
-		vid_target_tensor, fps = vid_preprocessing(video, 512)
+		vid_target_tensor, fps, w, h = vid_preprocessing(video, 512)
 		video_target_tensor = vid_target_tensor.to(device)
 		image_tensor = video_target_tensor[:,0,:,:,:]
 
 		edited_image_tensor = gen.edit_img(image_tensor, labels_v, selected_s)
 
 		# de-norm
-		edited_image = img_postprocessing(edited_image_tensor)
+		edited_image = img_postprocessing(edited_image_tensor, w, h)
 
 		return edited_image
 
@@ -139,15 +154,15 @@ def vid_edit(gen, chunk_size, device):
 	@torch.no_grad()
 	def edit_vid(video, *selected_s):
 
-		video_target_tensor, fps = vid_preprocessing(video, 512)
+		video_target_tensor, fps, w, h = vid_preprocessing(video, 512) # btchw
 		video_target_tensor = video_target_tensor.to(device)
 
-		edited_video_tensor = gen.edit_vid_batch(video_target_tensor, labels_v, selected_s, chunk_size)
-		edited_image_tensor = edited_video_tensor[:,:,0,:,:]       
+		edited_video_tensor = gen.edit_vid_batch(video_target_tensor, labels_v, selected_s, chunk_size) #bcthw
+		edited_image_tensor = edited_video_tensor[:,:,0,:,:]	   
 
 		# de-norm
-		animated_video, animated_all_video = vid_all_save(video_target_tensor, edited_video_tensor, fps)
-		edited_image = img_postprocessing(edited_image_tensor)
+		animated_video, animated_all_video = vid_all_save(video_target_tensor, edited_video_tensor, w, h, fps)
+		edited_image = img_postprocessing(edited_image_tensor, w, h)
 
 		return edited_image, animated_video, animated_all_video
 
@@ -164,7 +179,7 @@ def vid_edit(gen, chunk_size, device):
 			with gr.Column(scale=1):
 				with gr.Row():
 					with gr.Accordion(open=True, label="Video"):
-						video_input = gr.Video(width=512,elem_id="input_vid")  # , height=550)
+						video_input = gr.Video(width=512)  # , height=550)
 						gr.Examples(
 							examples=[
 								["./data/driving/driving1.mp4"],
@@ -184,16 +199,16 @@ def vid_edit(gen, chunk_size, device):
 				with gr.Row():
 					with gr.Accordion(open=True, label="Edited First Frame"):
 						#image_output.render()
-						image_output = gr.Image(label="Image", elem_id="output_img", type='numpy', interactive=False, width=512)
+						image_output = gr.Image(label="Image", type='numpy', interactive=False, width=512)
 
 					with gr.Accordion(open=True, label="Edited Video"):
 						#video_output.render()
-						video_output = gr.Video(label="Video", elem_id="output_vid", width=512)
+						video_output = gr.Video(label="Video", width=512)
 
 				with gr.Row():
 					with gr.Accordion(open=True, label="Original & Edited Videos"):
 						#video_all_output.render()
-						video_all_output = gr.Video(label="Videos", elem_id="output_vid_all")
+						video_all_output = gr.Video(label="Videos")
 
 			with gr.Column(scale=1):
 				with gr.Accordion("Control Panel", open=True):
@@ -230,10 +245,10 @@ def vid_edit(gen, chunk_size, device):
 				with gr.Row():
 					with gr.Column(scale=1):
 						with gr.Row():	# Buttons now within a single Row
-							edit_btn = gr.Button("Edit",elem_id="button_edit")
-							clear_btn = gr.Button("Clear",elem_id="button_clear")
+							edit_btn = gr.Button("Edit")
+							clear_btn = gr.Button("Clear")
 						with gr.Row():
-							animate_btn = gr.Button("Generate",elem_id="button_generate")
+							animate_btn = gr.Button("Generate")
 
 		edit_btn.click(
 			fn=edit_img,
@@ -266,10 +281,10 @@ def vid_edit(gen, chunk_size, device):
 				['./data/driving/driving9.mp4', 0, 0, 0, 0, 0, 0, 0,
 				 0, 0, 0, 0, 0, -0.1, 0.07],
 			],
-            fn=edit_vid,
+			#fn=edit_vid,
 			inputs=[video_input] + inputs_s,
-            outputs=[image_output, video_output, video_all_output],
-            cache_examples=True,
+			#outputs=[image_output, video_output, video_all_output],
+			#cache_examples=True,
 		)
 
 

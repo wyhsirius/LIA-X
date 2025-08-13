@@ -22,7 +22,7 @@ labels_k = [
 	'pout',
 	'open->close',
 	'"O" Mouth',
-	'apple cheek',
+	'smile',
 
 	'close->open',
 	'eyebrows',
@@ -49,7 +49,7 @@ def load_image(img, size):
 
 
 def img_preprocessing(img_path, size):
-	img, w, h = load_image(img_path, size)	# [0, 1]
+	img, w, h = load_image(img_path, size)  # [0, 1]
 	img = torch.from_numpy(img).unsqueeze(0).float()  # [0, 1]
 	imgs_norm = (img - 0.5) * 2.0  # [-1, 1]
 
@@ -58,12 +58,11 @@ def img_preprocessing(img_path, size):
 
 def resize(img, size):
 	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((size, size), antialias=True),
-		#torchvision.transforms.CenterCrop(size)
+		torchvision.transforms.Resize(size, antialias=True),
+		torchvision.transforms.CenterCrop(size)
 	])
 
 	return transform(img)
-
 
 def resize_back(img, w, h):
 	transform = torchvision.transforms.Compose([
@@ -71,7 +70,6 @@ def resize_back(img, w, h):
 	])
 
 	return transform(img)
-
 
 def vid_preprocessing(vid_path, size):
 	vid_dict = torchvision.io.read_video(vid_path, pts_unit='sec')
@@ -101,7 +99,7 @@ def vid_denorm(vid):
 
 
 def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
-	
+
 	image = resize_back(image, w, h)
 	image = image.permute(0, 2, 3, 1)
 	edited_image = img_denorm(image)
@@ -113,20 +111,24 @@ def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
 
 def vid_postprocessing(video, w, h, fps, output_path=output_dir + "/output_vid.mp4"):
 	# video: BCTHW
-	
+
 	b,c,t,_,_ = video.size()
 	vid_batch = resize_back(rearrange(video, "b c t h w -> (b t) c h w"), w, h)
-	vid = rearrange(vid_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C	
+	vid = rearrange(vid_batch, "(b t) c h w -> b t h w c", b=b)	# B T H W C
 	vid_np = (vid_denorm(vid[0]).numpy() * 255).astype('uint8')
 	imageio.mimwrite(output_path, vid_np, fps=fps, codec='libx264', quality=10)
 
 	return output_path
 
 
-def animation(gen, chunk_size, device):
-	
+def clear_media():
+	return None, *([0] * len(labels_k))
+
+
+def img_edit(gen, device):
+
 	@torch.no_grad()
-	def edit_media(image, *selected_s):
+	def edit_img(image, *selected_s):
 
 		image_tensor, w, h = img_preprocessing(image, 512)
 		image_tensor = image_tensor.to(device)
@@ -138,36 +140,16 @@ def animation(gen, chunk_size, device):
 
 		return edited_image
 
-	@torch.no_grad()
-	def animate_media(image, video, *selected_s):
 
-		image_tensor, w, h = img_preprocessing(image, 512)
-		vid_target_tensor, fps = vid_preprocessing(video, 512)
-		image_tensor = image_tensor.to(device)
-		video_target_tensor = vid_target_tensor.to(device)
-
-		animated_video = gen.animate_batch(image_tensor, video_target_tensor, labels_v, selected_s, chunk_size)
-		edited_image = animated_video[:,:,0,:,:]
-
-		# postprocessing
-		animated_video = vid_postprocessing(animated_video, w, h, fps)
-		edited_image = img_postprocessing(edited_image, w, h)
-		return edited_image, animated_video
-
-
-	def clear_media():
-		return None, None, *([0] * len(labels_k))
-
-	
-	with gr.Tab("Animation"):
+	with gr.Tab("Image Editing"):
 
 		inputs_s = []
 
 		with gr.Row():
 			with gr.Column(scale=1):
 				with gr.Row():
-					with gr.Accordion(open=True, label="Source Image"):
-						image_input = gr.Image(type="filepath", elem_id="input_img", width=512)	# , height=550)
+					with gr.Accordion(open=True, label="Image"):
+						image_input = gr.Image(type="filepath", width=512)	# , height=550)
 						gr.Examples(
 							examples=[
 								["./data/source/macron.png"],
@@ -182,111 +164,64 @@ def animation(gen, chunk_size, device):
 							visible=True,
 							)
 
-					with gr.Accordion(open=True, label="Driving Video"):
-						video_input = gr.Video(width=512, elem_id="input_vid",)  # , height=550)
-						gr.Examples(
-							examples=[
-								["./data/driving/driving6.mp4"],
-								["./data/driving/driving1.mp4"],
-								["./data/driving/driving2.mp4"],
-								["./data/driving/driving4.mp4"],
-								["./data/driving/driving8.mp4"],
-							],
-							inputs=[video_input],
-							cache_examples=False,
-							visible=True,
-							)
 
 				with gr.Row():
 					with gr.Column(scale=1):
 						with gr.Row():	# Buttons now within a single Row
-							edit_btn = gr.Button("Edit", elem_id="button_edit",)
-							clear_btn = gr.Button("Clear", elem_id="button_clear")
+							edit_btn = gr.Button("Edit")
+							clear_btn = gr.Button("Clear")
 						with gr.Row():
-							animate_btn = gr.Button("Animate", elem_id="button_animate")
+							animate_btn = gr.Button("Generate")
 
 
 
 			with gr.Column(scale=1):
 
 				with gr.Row():
-					with gr.Accordion(open=True, label="Edited Source Image"):
-						#image_output.render()
-						image_output = gr.Image(label="Output Image", elem_id="output_img", type='numpy', interactive=False, width=512)#.render()
+					with gr.Accordion(open=True, label="Edited Image"):
+						image_output = gr.Image(label="Output Image", type='numpy', interactive=False, width=512)
 
-
-					with gr.Accordion(open=True, label="Animated Video"):
-						#video_output.render()
-						video_output = gr.Video(label="Output Video", elem_id="output_vid", width=512)#.render()
 
 				with gr.Accordion("Control Panel", open=True):
 					with gr.Tab("Head"):
 						with gr.Row():
 							for k in labels_k[:3]:
-								slider = gr.Slider(minimum=-1.0, maximum=0.5, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-1.0, maximum=0.5, value=0, label=k)
 								inputs_s.append(slider)
 						with gr.Row():
 							for k in labels_k[3:6]:
-								slider = gr.Slider(minimum=-0.5, maximum=0.5, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-0.5, maximum=0.5, value=0, label=k)
 								inputs_s.append(slider)
 
 					with gr.Tab("Mouth"):
 						with gr.Row():
 							for k in labels_k[6:8]:
-								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k)
 								inputs_s.append(slider)
 						with gr.Row():
 							for k in labels_k[8:10]:
-								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k)
 								inputs_s.append(slider)
 
 					with gr.Tab("Eyes"):
 						with gr.Row():
 							for k in labels_k[10:12]:
-								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-0.4, maximum=0.4, value=0, label=k)
 								inputs_s.append(slider)
 						with gr.Row():
 							for k in labels_k[12:14]:
-								slider = gr.Slider(minimum=-0.2, maximum=0.2, value=0, label=k, elem_id="slider_"+str(k))
+								slider = gr.Slider(minimum=-0.2, maximum=0.2, value=0, label=k)
 								inputs_s.append(slider)
 
 
 		edit_btn.click(
-			fn=edit_media,
+			fn=edit_img,
 			inputs=[image_input] + inputs_s,
 			outputs=[image_output],
 			show_progress=True
 		)
 
-		animate_btn.click(
-			fn=animate_media,
-			inputs=[image_input, video_input] + inputs_s,
-			outputs=[image_output, video_output],
-			show_progress=True
-		)
-
 		clear_btn.click(
 			fn=clear_media,
-			outputs=[image_output, video_output] + inputs_s
+			outputs=[image_output] + inputs_s
 		)
-
-		gr.Examples(
-			examples=[
-				['./data/source/macron.png', './data/driving/driving6.mp4',-0.37,-0.34,0,0,0,0,0,0,0,0,0,0,0,0],
-				['./data/source/taylor.png', './data/driving/driving6.mp4', -0.31, -0.2, 0, -0.26, -0.14, 0, 0.068, 0.131, 0, 0, 0,
-				 0, -0.058, 0.087],
-				['./data/source/macron.png', './data/driving/driving1.mp4', 0.14,0,-0.26,-0.29,-0.11,0,-0.13,-0.18,0,0,0,0,-0.02,0.07],
-				['./data/source/portrait3.png', './data/driving/driving1.mp4', -0.03,0.21,-0.31,-0.12,-0.11,0,-0.05,-0.16,0,0,0,0,-0.02,0.07],
-				['./data/source/einstein.png','./data/driving/driving2.mp4',-0.31,0,0,0.16,0.08,0,-0.07,0,0.13,0,0,0,0,0],
-				['./data/source/portrait1.png', './data/driving/driving4.mp4', 0, 0, -0.17, -0.19, 0.25, 0, 0, -0.086,
-				 0.087, 0, 0, 0, 0, 0],
-				['./data/source/portrait2.png','./data/driving/driving8.mp4',0,0,-0.25,0,0,0,0,0,0,0.126,0,0,0,0],
-				
-			],
-			#fn=animate_media,
-			inputs=[image_input, video_input] + inputs_s,
-			#outputs=[image_output, video_output],
-			#cache_examples=True,
-		)
-
-

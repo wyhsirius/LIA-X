@@ -11,7 +11,7 @@ from networks.generator import Generator
 
 device = torch.device("cuda")
 gen = Generator(size=512, motion_dim=40, scale=2).to(device)
-ckpt_path = "./model/lia-x.pt"
+ckpt_path = "../../../LIAX-release/model/lia-x.pt"
 gen.load_state_dict(torch.load(ckpt_path, weights_only=True))
 gen.eval()
 
@@ -47,13 +47,14 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
 		with gr.Tabs():
 			from gradio_tabs.animation import animation
 			from gradio_tabs.vid_edit import vid_edit
+			from gradio_tabs.img_edit import img_edit
 			animation(gen, chunk_size, device)
+			img_edit(gen, device)
 			vid_edit(gen, chunk_size, device)
 
 	
 demo.launch(
 	server_name='0.0.0.0',
 	server_port=10006,
-	share=True,
 	allowed_paths=["./data/source","./data/driving"]
 )
