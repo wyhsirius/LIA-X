@@ -170,8 +170,8 @@ def img_edit(gen, device):
 						with gr.Row():	# Buttons now within a single Row
 							edit_btn = gr.Button("Edit")
 							clear_btn = gr.Button("Clear")
-						with gr.Row():
-							animate_btn = gr.Button("Generate")
+						#with gr.Row():
+						#	animate_btn = gr.Button("Generate")
 
 
 
