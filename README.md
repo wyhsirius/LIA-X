@@ -104,3 +104,13 @@ You can use `increase_scale` and `increase_top_scale` flags to adjust bounding b
 python inference.py --mode animation --cfg <YOUR_CONFIG_FILE_PATH>
 ```
 
+## Citation
+```bibtex
+@article{wang2025lia,
+  title={LIA-X: Interpretable Latent Portrait Animator},
+  author={Wang, Yaohui and Yang, Di and Chen, Xinyuan and Bremond, Francois and Qiao, Yu and Dantcheva, Antitza},
+  journal={arXiv preprint arXiv:2508.09959},
+  year={2025}
+}
+```
+
