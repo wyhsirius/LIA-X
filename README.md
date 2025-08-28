@@ -11,9 +11,9 @@ This is the official PyTorch codebase for [LIA-X](https://arxiv.org/abs/2508.099
 <img src="teaser.gif" width="1000">
 
 ## News
-**2025/08/20:** [LIA-X](https://huggingface.co/spaces/YaohuiW/LIA-X) is selected as **Spaces of the Week** on HuggingFace!
+**2025.08.20:** [LIA-X](https://huggingface.co/spaces/YaohuiW/LIA-X) is selected as **Spaces of the Week** on HuggingFace!
 
-**2025/08/13:** We release **paper**, **model** and **inference code**!
+**2025.08.13:** We release **paper**, **model** and **inference code**!
 
 ## Setup
 
