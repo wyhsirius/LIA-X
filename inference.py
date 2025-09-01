@@ -4,84 +4,75 @@ import argparse
 import yaml
 from pathlib import Path
 from utils.data_processing import img_preprocessing, vid_preprocessing, save_animation, save_img_edit, save_vid_edit, save_linear_manipulation
-
-extensions_dir = "./torch_extension/"
-os.environ["TORCH_EXTENSIONS_DIR"] = extensions_dir
-
 from networks.generator import Generator
 
-@torch.no_grad()
+
+@torch.inference_mode()
 def run_linear_manipulation(cfg, gen, save_dir):
 
 	print("==> loading data")
-	img = img_preprocessing(cfg["source_path"], cfg["size"])
+	img, w, h = img_preprocessing(cfg["source_path"], cfg["size"])
 	img = img.to(device)
 
 	print("==> running")
-	res = gen.interpolate_img(img, cfg["motion_id"], cfg["motion_value"])
+	res = gen.interpolate_img(img, cfg["motion_id"], cfg["motion_value"]) # TCHW
 	# save results
-	save_linear_manipulation(save_dir, res, fps=12)
+	save_linear_manipulation(save_dir, res, w, h, fps=12)
 
 	return
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def run_img_edit(cfg, gen, save_dir):
 
 	print("==> loading data")
 	print("image path: ", cfg["source_path"])
-	img = img_preprocessing(cfg["source_path"], cfg["size"])
+	img, w, h = img_preprocessing(cfg["source_path"], cfg["size"])
 	img = img.to(device)
 
 	print("==> running")
 	img_edit = gen.edit_img(img, cfg["motion_id"], cfg["motion_value"])
 	# save results
-	save_img_edit(save_dir, img, img_edit)
+	save_img_edit(save_dir, img, img_edit, w, h)
 	print("save path: ", save_dir)
 
 	return
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def run_vid_edit(cfg, gen, chunk_size, save_dir):
 
 	print("==> loading data")
 	print("video path: ", cfg["driving_path"])
-	vid, fps = vid_preprocessing(cfg["driving_path"], cfg["size"])
-	vid = vid.to(device)
+	vid, fps, w, h = vid_preprocessing(cfg["driving_path"], cfg["size"])
+	vid = vid.to(device) # TCHW
 
 	print("==> running")
-	if chunk_size == 1:
-		vid_edit = gen.edit_vid(vid, cfg["motion_id"], cfg["motion_value"])
-	else:
-		vid_edit = gen.edit_vid_batch(vid, cfg["motion_id"], cfg["motion_value"], chunk_size)
+	vid_edit = gen.edit_vid(vid, cfg["motion_id"], cfg["motion_value"], chunk_size) # tchw
 
 	# save results
-	save_vid_edit(save_dir, vid, vid_edit, fps=fps)
+	save_vid_edit(save_dir, vid, vid_edit, w, h, fps=fps)
 	print("save path: ", save_dir)
 
 	return
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def run_animation(cfg, gen, chunk_size, save_dir):
 
 	print("==> loading data")
 	print("image path: ", cfg["source_path"])
 	print("video path: ", cfg["driving_path"])
-	img_source = img_preprocessing(cfg["source_path"], cfg["size"])
-	vid_driving, fps = vid_preprocessing(cfg["driving_path"], cfg["size"])
+	img_source, w, h = img_preprocessing(cfg["source_path"], cfg["size"])
+	vid_driving, fps, _, _ = vid_preprocessing(cfg["driving_path"], cfg["size"])
 	img_source = img_source.to(device) # BCHW
-	vid_driving = vid_driving.to(device) # BTCHW
+	vid_driving = vid_driving.to(device) # TCHW
 
 	print("==> running")
-	if chunk_size == 1:
-		vid_animated = gen.animate(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"])
-	else:
-		vid_animated = gen.animate_batch(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"], chunk_size)
+	vid_animated = gen.animate(img_source, vid_driving, cfg["motion_id"], cfg["motion_value"], chunk_size) # tchw
 	
 	# save results
-	save_animation(save_dir, img_source, vid_driving, vid_animated, fps)
+	save_animation(save_dir, img_source, vid_driving, vid_animated, w, h, fps)
 	print("save path: ", save_dir)
 
 	return
@@ -101,7 +92,7 @@ if __name__ == "__main__":
 
 	# loading model
 	device = torch.device("cuda")
-	gen = Generator(size=cfg['size'], motion_dim=cfg['motion_dim'], scale=cfg['scale']).to(device)
+	gen = Generator(motion_dim=cfg['motion_dim'], scale=cfg['scale']).to(device)
 	gen.load_state_dict(torch.load(cfg['ckpt_path'], weights_only=False))
 	gen.eval()
 

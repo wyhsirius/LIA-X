@@ -1,17 +1,11 @@
 import gradio as gr
-import subprocess
-import os
-#import spaces
 import torch
-
-extensions_dir = "./torch_extension/"
-os.environ["TORCH_EXTENSIONS_DIR"] = extensions_dir
 
 from networks.generator import Generator
 
 device = torch.device("cuda")
-gen = Generator(size=512, motion_dim=40, scale=2).to(device)
-ckpt_path = "../../../LIAX-release/model/lia-x.pt"
+gen = Generator(motion_dim=40, scale=2).to(device)
+ckpt_path = './model/lia-x.pt'
 gen.load_state_dict(torch.load(ckpt_path, weights_only=True))
 gen.eval()
 

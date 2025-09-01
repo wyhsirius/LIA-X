@@ -43,7 +43,7 @@ def load_image(img, size):
 	w, h = img.size
 	img = img.resize((size, size))
 	img = np.asarray(img)
-	img = np.transpose(img, (2, 0, 1))	# 3 x 256 x 256
+	img = np.transpose(img, (2, 0, 1))
 
 	return img / 255.0, w, h
 
@@ -58,65 +58,29 @@ def img_preprocessing(img_path, size):
 
 def resize(img, size):
 	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize(size, antialias=True),
-		torchvision.transforms.CenterCrop(size)
+		torchvision.transforms.Resize(
+			size,
+			interpolation=torchvision.transforms.InterpolationMode.BILINEAR,
+			antialias=True),
 	])
 
 	return transform(img)
 
-def resize_back(img, w, h):
-	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((h, w), antialias=True),
-	])
 
-	return transform(img)
+def denorm(x):
+	x = x.clamp(-1, 1)
+	x = (x - x.min()) / (x.max() - x.min())
 
-def vid_preprocessing(vid_path, size):
-	vid_dict = torchvision.io.read_video(vid_path, pts_unit='sec')
-	vid = vid_dict[0].permute(0, 3, 1, 2).unsqueeze(0)	# btchw
-	fps = vid_dict[2]['video_fps']
-	vid_norm = (vid / 255.0 - 0.5) * 2.0  # [-1, 1]
-
-	vid_norm = torch.cat([
-		resize(vid_norm[:, i, :, :, :], size).unsqueeze(1) for i in range(vid.size(1))
-	], dim=1)
-
-	return vid_norm, fps
-
-
-def img_denorm(img):
-	img = img.clamp(-1, 1).cpu()
-	img = (img - img.min()) / (img.max() - img.min())
-
-	return img
-
-
-def vid_denorm(vid):
-	vid = vid.clamp(-1, 1).cpu()
-	vid = (vid - vid.min()) / (vid.max() - vid.min())
-
-	return vid
+	return x
 
 
 def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
+	# image: BCHW
 
-	image = resize_back(image, w, h)
-	image = image.permute(0, 2, 3, 1)
-	edited_image = img_denorm(image)
-	img_output = (edited_image[0].numpy() * 255).astype(np.uint8)
-	imageio.imwrite(output_path, img_output, quality=6)
-
-	return output_path
-
-
-def vid_postprocessing(video, w, h, fps, output_path=output_dir + "/output_vid.mp4"):
-	# video: BCTHW
-
-	b,c,t,_,_ = video.size()
-	vid_batch = resize_back(rearrange(video, "b c t h w -> (b t) c h w"), w, h)
-	vid = rearrange(vid_batch, "(b t) c h w -> b t h w c", b=b)	# B T H W C
-	vid_np = (vid_denorm(vid[0]).numpy() * 255).astype('uint8')
-	imageio.mimwrite(output_path, vid_np, fps=fps, codec='libx264', quality=10)
+	image = resize(image, (h, w))
+	image = rearrange(image, "b c h w -> b h w c")
+	img_np = (denorm(image[0]).cpu().numpy() * 255).astype(np.uint8)
+	imageio.imwrite(output_path, img_np, quality=8)
 
 	return output_path
 
@@ -127,7 +91,7 @@ def clear_media():
 
 def img_edit(gen, device):
 
-	@torch.no_grad()
+	@torch.inference_mode()
 	def edit_img(image, *selected_s):
 
 		image_tensor, w, h = img_preprocessing(image, 512)
@@ -149,7 +113,7 @@ def img_edit(gen, device):
 			with gr.Column(scale=1):
 				with gr.Row():
 					with gr.Accordion(open=True, label="Image"):
-						image_input = gr.Image(type="filepath", width=512)	# , height=550)
+						image_input = gr.Image(type="filepath", width=512)
 						gr.Examples(
 							examples=[
 								["./data/source/macron.png"],
@@ -170,8 +134,6 @@ def img_edit(gen, device):
 						with gr.Row():	# Buttons now within a single Row
 							edit_btn = gr.Button("Edit")
 							clear_btn = gr.Button("Clear")
-						#with gr.Row():
-						#	animate_btn = gr.Button("Generate")
 
 
 

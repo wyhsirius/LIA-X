@@ -39,37 +39,23 @@ labels_v = [
 ]
 
 
-def load_image(img, size):
-	# img = Image.open(filename).convert('RGB')
-	if not isinstance(img, np.ndarray):
-		img = Image.open(img).convert('RGB')
-		img = img.resize((size, size))
-		img = np.asarray(img)
-	img = np.transpose(img, (2, 0, 1))	# 3 x 256 x 256
+def process_first_frame(vid_path, size):
 
-	return img / 255.0
+	vid_dict = torchvision.io.read_video(vid_path, start_pts=0, end_pts=0, pts_unit='sec')
+	img = vid_dict[0].permute(0, 3, 1, 2)  # bchw
+	_, _, h, w = img.size()
+	img_norm = (img / 255.0 - 0.5) * 2.0 # [-1, 1]
+	img_norm = resize(img_norm, (size, size))
 
-
-def img_preprocessing(img_path, size):
-	img = load_image(img_path, size)  # [0, 1]
-	img = torch.from_numpy(img).unsqueeze(0).float()  # [0, 1]
-	imgs_norm = (img - 0.5) * 2.0  # [-1, 1]
-
-	return imgs_norm
+	return img_norm, w, h
 
 
 def resize(img, size):
 	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((size, size), antialias=True),
-		#torchvision.transforms.CenterCrop(size)
-	])
-
-	return transform(img)
-
-
-def resize_back(img, w, h):
-	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((h, w), antialias=True),
+		torchvision.transforms.Resize(
+			size,
+			interpolation=torchvision.transforms.InterpolationMode.BILINEAR,
+			antialias=True),
 	])
 
 	return transform(img)
@@ -77,55 +63,46 @@ def resize_back(img, w, h):
 
 def vid_preprocessing(vid_path, size):
 	vid_dict = torchvision.io.read_video(vid_path, pts_unit='sec')
-	vid = vid_dict[0].permute(0, 3, 1, 2).unsqueeze(0)	# btchw
-	_,_,_,h,w = vid.size()
+	vid = vid_dict[0].permute(0, 3, 1, 2) # tchw
+	_,_,h,w = vid.size()
 	fps = vid_dict[2]['video_fps']
 	vid_norm = (vid / 255.0 - 0.5) * 2.0  # [-1, 1]
-
-	vid_norm = torch.cat([
-		resize(vid_norm[:, i, :, :, :], size).unsqueeze(1) for i in range(vid.size(1))
-	], dim=1)
+	vid_norm = resize(vid_norm, (size, size))  # tchw
 
 	return vid_norm, fps, w, h
 
 
-def img_denorm(img):
-	img = img.clamp(-1, 1).cpu()
-	img = (img - img.min()) / (img.max() - img.min())
+def denorm(x):
+	x = x.clamp(-1, 1)
+	x = (x - x.min()) / (x.max() - x.min())
 
-	return img
-
-
-def vid_denorm(vid):
-	vid = vid.clamp(-1, 1).cpu()
-	vid = (vid - vid.min()) / (vid.max() - vid.min())
-
-	return vid
+	return x
 
 
 def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
+	# image: bchw
 
-	image = resize_back(image, w, h)
-	image = image.permute(0, 2, 3, 1)
-	edited_image = img_denorm(image)
-	img_output = (edited_image[0].numpy() * 255).astype(np.uint8)
-	imageio.imwrite(output_path, img_output, quality=8)
+	image = resize(image, (h, w))
+	image = rearrange(image, "b c h w -> b h w c")
+	img_np = (denorm(image[0]).cpu().numpy() * 255).astype(np.uint8)
+	imageio.imwrite(output_path, img_np, quality=8)
 
 	return output_path
 
 
 def vid_all_save(vid_d, vid_a, w, h, fps, output_path=output_dir + "/output_vid.mp4", output_all_path=output_dir + "/output_all_vid.mp4"):
-	
-	b,t,c,_,_ = vid_d.size()
-	vid_d_batch = resize_back(rearrange(vid_d, "b t c h w -> (b t) c h w"), w, h)
-	vid_a_batch = resize_back(rearrange(vid_a, "b c t h w -> (b t) c h w"), w, h)
-	
-	vid_d = rearrange(vid_d_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C
-	vid_a = rearrange(vid_a_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C	
-	vid_all = torch.cat([vid_d, vid_a], dim=3)
+	# vid_d: tchw
+	# vid_a: tchw
 
-	vid_a_np = (vid_denorm(vid_a[0]).numpy() * 255).astype('uint8')
-	vid_all_np = (vid_denorm(vid_all[0]).numpy() * 255).astype('uint8')
+	vid_d = resize(vid_d, (h, w))
+	vid_a = resize(vid_a, (h, w))
+	
+	vid_d = rearrange(vid_d, "t c h w -> t h w c")
+	vid_a = rearrange(vid_a, "t c h w -> t h w c")
+	vid_all = torch.cat([vid_d, vid_a], dim=2)
+
+	vid_a_np = (denorm(vid_a).cpu().numpy() * 255).astype('uint8')
+	vid_all_np = (denorm(vid_all).cpu().numpy() * 255).astype('uint8')
 
 	imageio.mimwrite(output_path, vid_a_np, fps=fps, codec='libx264', quality=8)
 	imageio.mimwrite(output_all_path, vid_all_np, fps=fps, codec='libx264', quality=8)
@@ -136,12 +113,11 @@ def vid_all_save(vid_d, vid_a, w, h, fps, output_path=output_dir + "/output_vid.
 def vid_edit(gen, chunk_size, device):
 	
 	
-	@torch.no_grad()
+	@torch.inference_mode()
 	def edit_img(video, *selected_s):
 
-		vid_target_tensor, fps, w, h = vid_preprocessing(video, 512)
-		video_target_tensor = vid_target_tensor.to(device)
-		image_tensor = video_target_tensor[:,0,:,:,:]
+		image_tensor, w, h = process_first_frame(video, 512)
+		image_tensor = image_tensor.to(device)
 
 		edited_image_tensor = gen.edit_img(image_tensor, labels_v, selected_s)
 
@@ -151,14 +127,14 @@ def vid_edit(gen, chunk_size, device):
 		return edited_image
 
 
-	@torch.no_grad()
+	@torch.inference_mode()
 	def edit_vid(video, *selected_s):
 
-		video_target_tensor, fps, w, h = vid_preprocessing(video, 512) # btchw
+		video_target_tensor, fps, w, h = vid_preprocessing(video, 512) # tchw
 		video_target_tensor = video_target_tensor.to(device)
 
-		edited_video_tensor = gen.edit_vid_batch(video_target_tensor, labels_v, selected_s, chunk_size) #bcthw
-		edited_image_tensor = edited_video_tensor[:,:,0,:,:]	   
+		edited_video_tensor = gen.edit_vid(video_target_tensor, labels_v, selected_s, chunk_size) #tchw
+		edited_image_tensor = edited_video_tensor[0:1,:,:,:] # bchw
 
 		# de-norm
 		animated_video, animated_all_video = vid_all_save(video_target_tensor, edited_video_tensor, w, h, fps)

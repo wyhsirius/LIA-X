@@ -58,16 +58,10 @@ def img_preprocessing(img_path, size):
 
 def resize(img, size):
 	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((size, size), antialias=True),
-		#torchvision.transforms.CenterCrop(size)
-	])
-
-	return transform(img)
-
-
-def resize_back(img, w, h):
-	transform = torchvision.transforms.Compose([
-		torchvision.transforms.Resize((h, w), antialias=True),
+		torchvision.transforms.Resize(
+			size,
+			interpolation=torchvision.transforms.InterpolationMode.BILINEAR,
+			antialias=True),
 	])
 
 	return transform(img)
@@ -75,49 +69,38 @@ def resize_back(img, w, h):
 
 def vid_preprocessing(vid_path, size):
 	vid_dict = torchvision.io.read_video(vid_path, pts_unit='sec')
-	vid = vid_dict[0].permute(0, 3, 1, 2).unsqueeze(0)	# btchw
+	vid = vid_dict[0].permute(0, 3, 1, 2) # tchw
 	fps = vid_dict[2]['video_fps']
 	vid_norm = (vid / 255.0 - 0.5) * 2.0  # [-1, 1]
-
-	vid_norm = torch.cat([
-		resize(vid_norm[:, i, :, :, :], size).unsqueeze(1) for i in range(vid.size(1))
-	], dim=1)
+	vid_norm = resize(vid_norm, (size, size)) # tchw
 
 	return vid_norm, fps
 
 
-def img_denorm(img):
-	img = img.clamp(-1, 1).cpu()
-	img = (img - img.min()) / (img.max() - img.min())
+def denorm(x):
+	x = x.clamp(-1, 1)
+	x = (x - x.min()) / (x.max() - x.min())
 
-	return img
-
-
-def vid_denorm(vid):
-	vid = vid.clamp(-1, 1).cpu()
-	vid = (vid - vid.min()) / (vid.max() - vid.min())
-
-	return vid
+	return x
 
 
 def img_postprocessing(image, w, h, output_path=output_dir + "/output_img.png"):
-	
-	image = resize_back(image, w, h)
-	image = image.permute(0, 2, 3, 1)
-	edited_image = img_denorm(image)
-	img_output = (edited_image[0].numpy() * 255).astype(np.uint8)
-	imageio.imwrite(output_path, img_output, quality=8)
+	# image: BCHW
+
+	image = resize(image, (h, w))
+	image = rearrange(image, "b c h w -> b h w c")
+	img_np = (denorm(image[0]).cpu().numpy() * 255).astype(np.uint8)
+	imageio.imwrite(output_path, img_np, quality=8)
 
 	return output_path
 
 
 def vid_postprocessing(video, w, h, fps, output_path=output_dir + "/output_vid.mp4"):
-	# video: BCTHW
-	
-	b,c,t,_,_ = video.size()
-	vid_batch = resize_back(rearrange(video, "b c t h w -> (b t) c h w"), w, h)
-	vid = rearrange(vid_batch, "(b t) c h w -> b t h w c", b=b) # B T H W C	
-	vid_np = (vid_denorm(vid[0]).numpy() * 255).astype('uint8')
+	# video: tchw
+
+	video = resize(video, (h, w)) # tchw
+	video = rearrange(video, "t c h w -> t h w c") # thwc
+	vid_np = (denorm(video).cpu().numpy() * 255).astype('uint8')
 	imageio.mimwrite(output_path, vid_np, fps=fps, codec='libx264', quality=8)
 
 	return output_path
@@ -125,7 +108,7 @@ def vid_postprocessing(video, w, h, fps, output_path=output_dir + "/output_vid.m
 
 def animation(gen, chunk_size, device):
 	
-	@torch.no_grad()
+	@torch.inference_mode()
 	def edit_media(image, *selected_s):
 
 		image_tensor, w, h = img_preprocessing(image, 512)
@@ -138,16 +121,16 @@ def animation(gen, chunk_size, device):
 
 		return edited_image
 
-	@torch.no_grad()
+	@torch.inference_mode()
 	def animate_media(image, video, *selected_s):
 
 		image_tensor, w, h = img_preprocessing(image, 512)
 		vid_target_tensor, fps = vid_preprocessing(video, 512)
-		image_tensor = image_tensor.to(device)
-		video_target_tensor = vid_target_tensor.to(device)
+		image_tensor = image_tensor.to(device) # bchw
+		video_target_tensor = vid_target_tensor.to(device) # tchw
 
-		animated_video = gen.animate_batch(image_tensor, video_target_tensor, labels_v, selected_s, chunk_size)
-		edited_image = animated_video[:,:,0,:,:]
+		animated_video = gen.animate(image_tensor, video_target_tensor, labels_v, selected_s, chunk_size) # tchw
+		edited_image = animated_video[0:1,:,:,:] # bchw
 
 		# postprocessing
 		animated_video = vid_postprocessing(animated_video, w, h, fps)
@@ -211,13 +194,11 @@ def animation(gen, chunk_size, device):
 
 				with gr.Row():
 					with gr.Accordion(open=True, label="Edited Source Image"):
-						#image_output.render()
-						image_output = gr.Image(label="Output Image", elem_id="output_img", type='numpy', interactive=False, width=512)#.render()
+						image_output = gr.Image(label="Output Image", elem_id="output_img", type='numpy', interactive=False, width=512)
 
 
 					with gr.Accordion(open=True, label="Animated Video"):
-						#video_output.render()
-						video_output = gr.Video(label="Output Video", elem_id="output_vid", width=512)#.render()
+						video_output = gr.Video(label="Output Video", elem_id="output_vid", width=512)
 
 				with gr.Accordion("Control Panel", open=True):
 					with gr.Tab("Head"):
@@ -283,10 +264,7 @@ def animation(gen, chunk_size, device):
 				['./data/source/portrait2.png','./data/driving/driving8.mp4',0,0,-0.25,0,0,0,0,0,0,0.126,0,0,0,0],
 				
 			],
-			#fn=animate_media,
 			inputs=[image_input, video_input] + inputs_s,
-			#outputs=[image_output, video_output],
-			#cache_examples=True,
 		)
 
 
