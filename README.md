@@ -25,7 +25,7 @@ cd LIA-X
 Setting up the environment and download [pre-trained model](https://huggingface.co/YaohuiW/LIA-X/tree/main) to `./model`. 
 
 ```bash
-conda create -n liax python=3.11
+conda create -n liax python=3.10
 conda activate liax
 pip install -r requirements.txt
 ```
