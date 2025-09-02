@@ -30,7 +30,7 @@ conda activate liax
 pip install -r requirements.txt
 ```
 
-## Interactive Interface 
+## Gradio UI 
 We recommend to use gradio interface to play with LIA-X. You could also use our online [HF Space](https://huggingface.co/spaces/YaohuiW/LIA-X) 
 
 ```bash
