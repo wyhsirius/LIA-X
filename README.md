@@ -31,7 +31,7 @@ pip install -r requirements.txt
 ```
 
 ## Gradio UI 
-We recommend to use gradio interface to play with LIA-X. You could also use our online [HF Space](https://huggingface.co/spaces/YaohuiW/LIA-X) 
+Run following command to launch Gradio UI locally. For online interface, visit [HF Space](https://huggingface.co/spaces/YaohuiW/LIA-X). 
 
 ```bash
 python app.py
